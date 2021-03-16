@@ -1,0 +1,134 @@
+plugins {
+    id 'groovy'
+    id 'java'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+
+
+dependencies {
+    compile 'org.codehaus.groovy:groovy-all:2.3.11'
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.10.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.10.3'
+//    compile 'com.fasterxml.jackson.core:JsonFactory:2.12.2'
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.12.2'
+    testCompile "com.lesfurets:jenkins-pipeline-unit:1.1"
+
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+
+task 'link-github' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("linking github")
+    commandLine 'scripts/link-github-repos.sh'
+}
+
+task 'link-gitlab' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("linking gitlab")
+    commandLine 'scripts/link-gitlab-repos.sh'
+}
+
+task 'gitlab-launch' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("linking github")
+    commandLine 'scripts/gitlab-launch.sh'
+}
+
+task 'gitlab-init' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("initializing gitlab")
+    commandLine 'scripts/gitlab-init.sh'
+}
+
+task 'gitlab-destroy' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("destroying github")
+    commandLine 'scripts/gitlab-destroy.sh'
+}
+
+
+
+
+task 'jenkins-launch' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("linking github")
+    commandLine 'scripts/jenkins-launch.sh'
+}
+task 'jenkins-destroy' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("destroying jenkins")
+    commandLine 'scripts/jenkins-destroy.sh'
+}
+task 'jenkins-init' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("initializing jenkins")
+    commandLine 'scripts/jenkins-init.sh'
+}
+
+
+task 'network-launch' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("launching network")
+    commandLine 'scripts/network-launch.sh'
+}
+task 'network-destroy' (type: Exec) {
+    group = "repo"
+    workingDir './'
+    println("destroying network")
+    commandLine 'scripts/network-destroy.sh'
+}
+
+test {
+    // delete old test reports
+    dependsOn cleanTest
+
+    // don't stop if tests fail
+    ignoreFailures = false
+
+    // minimize logging
+    testLogging.maxGranularity = 0
+
+    // show stdout from tests
+    onOutput { dest, event -> print event.message }
+
+    // show test results
+    def results = []
+    afterTest { desc, result ->
+        println "${desc.className.split("\\.")[-1]}: " +
+                "${desc.name}: ${result.resultType}"
+    }
+    afterSuite { desc, result ->
+        if (desc.className) { results << result }
+    }
+
+    // show summary
+    doLast {
+        println "Tests: ${results.sum { it.testCount }}" +
+                ", Failures: ${results.sum { it.failedTestCount }}" +
+                ", Errors: ${results.sum { it.exceptions.size() }}" +
+                ", Skipped: ${results.sum { it.skippedTestCount }}"
+    }
+}
