@@ -4,4 +4,5 @@ def call(String name = 'human') {
     YamlReaderExample yre = new YamlReaderExample()
     echo "Hello, ${name}."
     println(yre)
+    return "test123"
 }
